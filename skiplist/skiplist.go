@@ -4,6 +4,21 @@ import (
 	"math/rand"
 )
 
+type IntKey struct {
+	Key int
+}
+
+func NewIntKey(key int) *IntKey {
+	return &IntKey{key}
+}
+
+func (this *IntKey) GetNum() int {
+	return this.Key
+}
+func (this *IntKey) Compare(key Key) int8 {
+	return (int8)(this.Key - key.GetNum())
+}
+
 /*
 * skip list
 **/
