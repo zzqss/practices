@@ -96,6 +96,7 @@ func (this *SkipList) Insert(key Key, Value interface{}) *Node {
 			index = NewIndex(node, index, i)
 		}
 		this.head = index
+		this.length += 1
 		return node
 	} else {
 		if this.head.Node.Key.Compare(key) > 0 {
@@ -120,6 +121,7 @@ func (this *SkipList) Insert(key Key, Value interface{}) *Node {
 				right = right.Down
 				index = index.Down
 			}
+			this.length += 1
 			return node
 		} else {
 			oldNode := this.Get(key)
@@ -127,6 +129,7 @@ func (this *SkipList) Insert(key Key, Value interface{}) *Node {
 				oldNode.Value = Value
 				return oldNode
 			}
+			this.length += 1
 			level := this.randomLevel()
 			if level > this.head.Level {
 				newHead := this.head
@@ -137,7 +140,7 @@ func (this *SkipList) Insert(key Key, Value interface{}) *Node {
 			}
 			index := this.head
 			newNode := NewNode(key, Value)
-			newIndexArray := make([]*Index, level+1, level+1)
+			newIndexArray := make([]*Index, 0, level+1)
 			var newIndex *Index = nil
 			for i := 0; i <= level; i++ {
 				newIndex = NewIndex(newNode, newIndex, i)
@@ -179,6 +182,7 @@ func (this *SkipList) Delete(key Key) *Node {
 	if oldNode == nil {
 		return nil
 	}
+	this.length -= 1
 	if this.head.Node.Key.Compare(key) == 0 {
 		nextNode := this.head.Node.Next
 		if nextNode == nil {
@@ -187,7 +191,7 @@ func (this *SkipList) Delete(key Key) *Node {
 			return oldNode
 		}
 		index := this.head
-		for index != nil {
+		for index.Down != nil {
 			if index.Node.Key.Compare(nextNode.Key) == 0 {
 				break
 			}
@@ -195,7 +199,7 @@ func (this *SkipList) Delete(key Key) *Node {
 		}
 		startLevel := index.Level + 1
 		fixLength := this.head.Level - index.Level
-		newIndexArray := make([]*Index, fixLength, fixLength)
+		newIndexArray := make([]*Index, 0, fixLength)
 		newIndex := index.Right
 		for i := startLevel; i <= this.head.Level; i++ {
 			newIndex := NewIndex(newIndex.Node, newIndex, i)
@@ -210,23 +214,19 @@ func (this *SkipList) Delete(key Key) *Node {
 		this.head = newIndexArray[len(newIndexArray)-1]
 	} else {
 		last := this.head
-		index := last.Right
 		for last != nil {
+			index := last.Right
 			if index == nil {
 				last = last.Down
-				index = last.Right
 			} else {
 				compare := index.Node.Key.Compare(key)
 				if compare == 0 {
 					last.Right = index.Right
 					last = last.Down
-					index = last.Right
 				} else if compare < 0 {
 					last = index
-					index = index.Right
 				} else {
 					last = last.Down
-					index = last.Right
 				}
 			}
 		}
